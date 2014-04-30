@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cl.apiandroid.business.mapper.PersonaMapper">
+
+    <resultMap id="personaResultMap" type="cl.apiandroid.ucentral.dto.Persona">
+        <id property="id" column="persona_id"/>
+
+        <result property="nombre" column="nombre"/>
+        <result property="apellido" column="apellido"/>
+        <result property="edad" column="edad"/>
+        <result property="telefono" column="telefono"/>
+    </resultMap>
+
+    <sql id="selectAll">
+        SELECT
+        p.'persona_id',
+        p.'nombre',
+        p.'apellido',
+        p.'edad',
+        p.'telefono'
+    </sql>
+
+    <select id="selectAll" resultMap="personaResultMap" statementType="PREPARED" useCache="false">
+        <include refid="selectAll"/>
+        FROM persona p
+    </select>
+
+    <select id="personaId" resultMap="personaResultMap" statementType="PREPARED" useCache="false" parameterType="cl.apiandroid.ucentral.dto.Persona">
+        <include refid="selectAll"/>
+        FROM persona p
+        WHERE persona_id = #{id}
+    </select>
+
+    <insert id="save" parameterType="cl.apiandroid.ucentral.dto.Persona" keyProperty="id" flushCache="true" statementType="PREPARED" useGeneratedKeys="true">
+        INSERT INTO persona
+        (
+        'nombre',
+        'apellido',
+        'edad',
+        'telefono'
+        )
+        VALUES
+        (
+        #{nombre},
+        #{apellido},
+        #{edad},
+        #{telefono}
+        )
+    </insert>
+
+    <delete id="delete" statementType="PREPARED" parameterType="cl.apiandroid.ucentral.dto.Persona" flushCache="true">
+      DELETE FROM persona
+      <where>
+          <if test="id != null">
+              usuario_id = #{id}
+          </if>
+      </where>
+    </delete>
+
+</mapper>

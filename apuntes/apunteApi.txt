@@ -1,0 +1,177 @@
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
+
+    <mvc:annotation-driven/>
+
+    <context:component-scan base-package="cl.candyShop.project.api.*"/>
+
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.XmlViewResolver"/>
+
+    <import resource="remoteService.xml"/>
+    <import resource="delegate.xml"/>
+
+</beans>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <import resource="db-init.xml"/>
+    <import resource="persistence.xml"/>
+    <import resource="bo.xml"/>
+    <import resource="service.xml"/>
+    <import resource="rmi-service.xml"/>
+
+</beans>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config/>
+    <context:spring-configured/>
+    <context:component-scan base-package="cl.candyShop.business.bo"/>
+
+</beans>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="datasourceMysql"/>
+        <property name="mapperLocations" value="classpath*:mappers/**/*.xml"/>
+    </bean>
+
+    <bean id="datasourceMysql" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost/candy_shop"/>
+        <property name="username" value="root"/>
+        <property name="password" value="root"/>
+        <property name="maxActive" value="10"/>
+    </bean>
+
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="sqlSessionFactory"/>
+    </bean>
+
+</beans>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="genericMapper" class="org.mybatis.spring.mapper.MapperFactoryBean" abstract="true">
+        <property name="sqlSessionTemplate" ref="sqlSessionTemplate"/>
+        <property name="addToConfig" value="true"/>
+    </bean>
+
+    <bean id="drugmasterScanner" parent="genericMapper" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="cl.candyShop.business.mapper"/>
+    </bean>
+
+</beans>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cl.candyShop.business.mapper.ComunaMapper">
+
+    <resultMap id="comunaResultMap" type="cl.candyShop.project.objects.dto.ComunaDTO">
+
+        <id property="id" column="comuna_id"/>
+
+        <result property="nombre" column="nombre"/>
+
+        <collection property="region"
+                    ofType="cl.candyShop.project.objects.dto.RegionDTO"
+                    column="region_id"
+                    select="cl.candyShop.business.mapper.RegionMapper.regionPorIdRegion"
+                />
+
+    </resultMap>
+
+    <sql id="selectAll">
+        SELECT
+        c.`comuna_id`,
+        c.`region_id`,
+        c.`nombre`
+    </sql>
+
+    <select id="comunaPorIdComuna" parameterType="Long" resultMap="comunaResultMap" statementType="PREPARED"
+            useCache="false">
+        <include refid="selectAll"/>
+        FROM comuna c
+        WHERE comuna_id = #{id}
+    </select>
+
+</mapper>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config/>
+    <context:spring-configured/>
+    <context:component-scan base-package="cl.candyShop.business.bo"/>
+
+</beans>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         id="WebApp_ID" version="2.5">
+    <display-name>Archetype Created Web Application</display-name>
+
+    <context-param>
+        <description>Vaadin production mode</description>
+        <param-name>productionMode</param-name>
+        <param-value>false</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>/WEB-INF/application-context.xml</param-value>
+    </context-param>
+
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>sistemaArriendo App</servlet-name>
+        <servlet-class>com.vaadin.server.VaadinServlet</servlet-class>
+        <init-param>
+            <description>sistemaArriendo App Interface</description>
+            <param-name>UI</param-name>
+            <param-value>cl.sistemaArriendo.vaadin.VaadinApp</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>sistemaArriendo App</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+</web-app>
